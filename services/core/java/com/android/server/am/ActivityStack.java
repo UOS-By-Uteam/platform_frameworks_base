@@ -3264,7 +3264,7 @@ final class ActivityStack {
                 return;
             } else {
                 final TaskRecord task = r.task;
-                if (r.frontOfTask && task.isOverHomeStack()) {
+                if (r.frontOfTask && task == topTask() && task.isOverHomeStack()) {
                     final int taskToReturnTo = task.getTaskToReturnTo();
 
                     // For non-fullscreen stack, we want to move the focus to the next visible
