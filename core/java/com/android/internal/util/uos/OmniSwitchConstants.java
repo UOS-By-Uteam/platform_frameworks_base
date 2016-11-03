@@ -15,7 +15,7 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 *
 */
-package com.android.internal.util.crdroid;
+package com.android.internal.util.uos;
 
 import android.content.Intent;
 

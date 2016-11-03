@@ -62,7 +62,6 @@ public class BrightnessMirrorController {
     }
 
     public void showMirror() {
-        updateIcon();
         mBrightnessMirror.setVisibility(View.VISIBLE);
         mStackScroller.setFadingOut(true);
         mScrimBehind.animateViewAlpha(0.0f, TRANSITION_DURATION_OUT, Interpolators.ALPHA_OUT);
@@ -132,23 +131,5 @@ public class BrightnessMirrorController {
         mBrightnessMirror = LayoutInflater.from(mBrightnessMirror.getContext()).inflate(
                 R.layout.brightness_mirror, mStatusBarWindow, false);
         mStatusBarWindow.addView(mBrightnessMirror, index);
-    }
-
-    private void updateIcon() {
-        // enable the brightness icon
-        boolean brightnessIconEnabled = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.BRIGHTNESS_ICON,
-                1, UserHandle.USER_CURRENT) == 1;
-        mIcon.setVisibility(brightnessIconEnabled? View.VISIBLE : View.GONE);
-
-        if (mIcon != null) {
-            boolean automatic = Settings.System.getIntForUser(mContext.getContentResolver(),
-                    Settings.System.SCREEN_BRIGHTNESS_MODE,
-                    Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL,
-                    UserHandle.USER_CURRENT) != Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL;
-            mIcon.setImageResource(automatic ?
-                    com.android.systemui.R.drawable.ic_qs_brightness_auto_on_new :
-                    com.android.systemui.R.drawable.ic_qs_brightness_auto_off_new);
-        }
     }
 }
