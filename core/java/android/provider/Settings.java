@@ -3773,6 +3773,18 @@ public final class Settings {
         public static final String KEYGUARD_TOGGLE_TORCH = "keyguard_toggle_torch";
 
         /**
+         * whether to enable UMind on lockscreen
+         * @hide
+         */
+        public static final String KEYGUARD_TOGGLE_UMIND = "keyguard_toggle_umind";
+
+        /**
+         * whether to enable UMind everywhere
+         * @hide
+         */
+        public static final String GLOBAL_UMIND = "global_umind";
+
+        /**
          * This preference enables showing the power menu on LockScreen.
          * @hide
          */

@@ -2216,5 +2216,8 @@ message MetricsEvent {
 
     // UOS Settings
     UOS_SETTINGS = 497;
+
+    // UOS Settings
+    UMIND_SETTINGS = 498;
   }
 }
