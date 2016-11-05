@@ -97,6 +97,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
+import android.os.PowerManager.WakeLock;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -331,6 +332,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private WindowState mKeyguardScrim;
     private boolean mKeyguardHidden;
     private boolean mKeyguardDrawnOnce;
+
+    // Wakelock
+    WakeLock mWakeLock;
 
     /* Table of Application Launch keys.  Maps from key codes to intent categories.
      *
@@ -865,6 +869,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mTorchEnabled;
     private boolean mIsTorchActive;
     private boolean mWasTorchActive;
+    
+    private boolean mUMindEnabled;
+    private boolean mIsUMindEnabled;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -1071,6 +1078,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.KEYGUARD_TOGGLE_TORCH), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.KEYGUARD_TOGGLE_UMIND), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -1308,7 +1318,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             ViewConfiguration.get(mContext).getDeviceGlobalActionKeyTimeout());
                 }
             } else {
-                if (!mTorchEnabled) {
+                if (!mTorchEnabled || !mUMindEnabled) {
                     wakeUpFromPowerKey(event.getDownTime());
                 }
                 if (mTorchEnabled && mIsTorchActive) {
@@ -1319,7 +1329,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     }
                     mIsTorchActive = false;
                     mWasTorchActive = true;
-                } else if (mTorchEnabled || (mSupportLongPressPowerWhenNonInteractive && hasLongPressOnPowerBehavior())) {
+                } else if (mTorchEnabled || (mSupportLongPressPowerWhenNonInteractive && hasLongPressOnPowerBehavior()) || mUMindEnabled) {
                     Message msg = mHandler.obtainMessage(MSG_POWER_LONG_PRESS);
                     msg.setAsynchronous(true);
                     mHandler.sendMessageDelayed(msg,
@@ -1499,7 +1509,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     private void powerLongPress() {
-        if (!mTorchEnabled || isScreenOn()) {
+        if (!mTorchEnabled || isScreenOn() || !mUMindEnabled) {
             int behavior = getResolvedLongPressOnPowerBehavior();
             switch (behavior) {
             case LONG_PRESS_POWER_NOTHING:
@@ -1510,8 +1520,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     performAuditoryFeedbackForAccessibilityIfNeed();
                 }
                 boolean locked = isStatusBarKeyguard() && isKeyguardSecure(mCurrentUserId);
+                boolean globalUMind = Settings.System.getIntForUser(mContext.getContentResolver(),
+                            Settings.System.GLOBAL_UMIND, 1, UserHandle.USER_CURRENT) == 1;
                 if (locked) {
                     behavior = LONG_PRESS_POWER_NOTHING;
+                } else if (globalUMind) {  
+                    if (!performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false)) {
+                        performAuditoryFeedbackForAccessibilityIfNeed();
+                    }
+                    try {
+		        Intent umind = mContext.getPackageManager().getLaunchIntentForPackage("com.umind");
+	    	        if(umind != null) mContext.startActivity(umind);
+                    } catch (Exception e) {
+                    }
+                    mIsUMindEnabled = true;
+                    mPowerKeyHandled = true;
                 } else {
                     showGlobalActionsInternal();
                 }
@@ -1525,13 +1548,31 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
            }
         } else if (mTorchEnabled && !isScreenOn()) {
-           try {
-               mCameraManager.setTorchMode(getCameraId(), true);
-           } catch (Exception e) {
-           }
-        mWasTorchActive = false;
-        mIsTorchActive = true;
-        mPowerKeyHandled = true;
+            try {
+                mCameraManager.setTorchMode(getCameraId(), true);
+            } catch (Exception e) {
+            }
+            mWasTorchActive = false;
+            mIsTorchActive = true;
+            mPowerKeyHandled = true;
+        } else if (mUMindEnabled && !isScreenOn()) {
+            if (!performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false)) {
+                performAuditoryFeedbackForAccessibilityIfNeed();
+            }
+            try {
+                mWakeLock = mPowerManager.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK 
+                                                            | PowerManager.FULL_WAKE_LOCK 
+                                               | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+                if (mWakeLock.isHeld()) {
+                    mWakeLock.release();
+                }
+                mWakeLock.acquire();
+		Intent umind = mContext.getPackageManager().getLaunchIntentForPackage("com.umind");
+	    	if(umind != null) mContext.startActivity(umind);
+            } catch (Exception e) {
+            }
+            mIsUMindEnabled = true;
+            mPowerKeyHandled = true;
         }
     }
 
@@ -2439,7 +2480,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             mTorchEnabled = (Settings.System.getIntForUser(resolver,
                     Settings.System.KEYGUARD_TOGGLE_TORCH, 0, UserHandle.USER_CURRENT) == 1);
-
+            mUMindEnabled = (Settings.System.getIntForUser(resolver,
+                    Settings.System.KEYGUARD_TOGGLE_UMIND, 0, UserHandle.USER_CURRENT) == 1);
         }
         synchronized (mWindowManagerFuncs.getWindowManagerLock()) {
             WindowManagerPolicyControl.reloadFromSetting(mContext);
