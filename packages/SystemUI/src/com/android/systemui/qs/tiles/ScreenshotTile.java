@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014 The Android Open Source Project
  * Copyright (C) 2012-2015 The CyanogenMod Project
- * Copyright (C) 2016, UOS Project
+ * Copyright (C) 2016, crDroid Android Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.os.UserHandle;
-import android.provider.Settings;
 import android.view.View;
 
 import com.android.systemui.R;
@@ -37,18 +35,12 @@ import com.android.systemui.qs.QSTile;
 
 import com.android.internal.logging.MetricsProto.MetricsEvent;
 
-import static android.view.WindowManager.TAKE_SCREENSHOT_FULLSCREEN;
-import static android.view.WindowManager.TAKE_SCREENSHOT_SELECTED_REGION;
-
 /** Quick settings tile: Screenshot **/
 public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
 
     private boolean mListening;
     private final Object mScreenshotLock = new Object();
     private ServiceConnection mScreenshotConnection = null;
-
-    private int mScreenshotFullscreen = TAKE_SCREENSHOT_FULLSCREEN;
-    private int mScreenshotSelectedRegion = TAKE_SCREENSHOT_SELECTED_REGION;
 
     public ScreenshotTile(Host host) {
         super(host);
@@ -73,34 +65,13 @@ public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
         } catch (InterruptedException ie) {
              // Do nothing
         }
-        if (Settings.System.getInt(mContext.getContentResolver(),
-            Settings.System.SCREENSHOT_TYPE, 0) == 1) {
-        takeScreenshot(mScreenshotSelectedRegion);
-        } else {
-        takeScreenshot(mScreenshotFullscreen);
-        }
-    }
-
-    @Override
-    public void handleLongClick() {
-        mHost.collapsePanels();
-        /* wait for the panel to close */
-        try {
-             Thread.sleep(2000);
-        } catch (InterruptedException ie) {
-             // Do nothing
-        }
-        if (Settings.System.getInt(mContext.getContentResolver(),
-            Settings.System.SCREENSHOT_TYPE, 0) == 1) {
-        takeScreenshot(mScreenshotSelectedRegion);
-        } else {
-        takeScreenshot(mScreenshotFullscreen);
-        }
+        takeScreenshot();
     }
 
     @Override
     public Intent getLongClickIntent() {
-        return null;
+        return new Intent().setComponent(new ComponentName(
+            "com.android.gallery3d", "com.android.gallery3d.app.GalleryActivity"));
     }
 
     @Override
@@ -116,37 +87,12 @@ public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     public int getMetricsCategory() {
-        return MetricsEvent.SCREEN;
+        return MetricsEvent.QUICK_SETTINGS;
     }
-
-    class ScreenshotRunnable implements Runnable {
-        private int mScreenshotFullscreen = TAKE_SCREENSHOT_FULLSCREEN;
-        private int mScreenshotSelectedRegion = TAKE_SCREENSHOT_SELECTED_REGION;
-
-        public void setScreenshotType(int screenshotType) {
-            if (Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.SCREENSHOT_TYPE, 0) == 1) {
-            mScreenshotSelectedRegion = screenshotType;
-            } else {
-            mScreenshotFullscreen = screenshotType;
-            }
-        }
-
-        @Override
-        public void run() {
-        if (Settings.System.getInt(mContext.getContentResolver(),
-              Settings.System.SCREENSHOT_TYPE, 0) == 1) {
-           takeScreenshot(mScreenshotSelectedRegion);
-        } else {
-           takeScreenshot(mScreenshotFullscreen);
-           }
-        }
-    }
-
-    private final ScreenshotRunnable mScreenshotRunnable = new ScreenshotRunnable();
 
     final Runnable mScreenshotTimeout = new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
             synchronized (mScreenshotLock) {
                 if (mScreenshotConnection != null) {
                     mContext.unbindService(mScreenshotConnection);
@@ -156,15 +102,13 @@ public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
         }
     };
 
-    private void takeScreenshot(final int screenshotType) {
+    private void takeScreenshot() {
         synchronized (mScreenshotLock) {
             if (mScreenshotConnection != null) {
                 return;
             }
-            ComponentName cn = new ComponentName("com.android.systemui",
-                    "com.android.systemui.screenshot.TakeScreenshotService");
-            Intent intent = new Intent();
-            intent.setComponent(cn);
+
+            Intent intent = new Intent(mContext, TakeScreenshotService.class);
             ServiceConnection conn = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName name, IBinder service) {
@@ -174,7 +118,7 @@ public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
                         }
 
                         Messenger messenger = new Messenger(service);
-                        Message msg = Message.obtain(null, screenshotType);
+                        Message msg = Message.obtain(null, 1);
                         final ServiceConnection myConn = this;
                         Handler h = new Handler(mHandler.getLooper()) {
                             @Override
@@ -201,10 +145,12 @@ public class ScreenshotTile extends QSTile<QSTile.BooleanState> {
                 }
 
                 @Override
-                public void onServiceDisconnected(ComponentName name) {}
+                public void onServiceDisconnected(ComponentName name) {
+                    // Do nothing here
+                }
             };
-            if (mContext.bindServiceAsUser(
-                    intent, conn, Context.BIND_AUTO_CREATE, UserHandle.CURRENT)) {
+
+            if (mContext.bindService(intent, conn, mContext.BIND_AUTO_CREATE)) {
                 mScreenshotConnection = conn;
                 mHandler.postDelayed(mScreenshotTimeout, 10000);
             }
