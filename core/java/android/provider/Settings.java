@@ -5293,6 +5293,15 @@ public final class Settings {
         public static final String DEFAULT_INPUT_METHOD = "default_input_method";
 
         /**
+         * Setting to record the user choice of whether to report the stats to UOS Server
+         */
+        public static final String UOS_STATS = "uos_stats";
+
+        /**
+         * Setting to record the opt-out of UOS Stats
+         */
+        public static final String UOS_STATS_RECORDED = "uos_stats_recorded";
+        /**
          * Setting to record the input method subtype used by default, holding the ID
          * of the desired method.
          */
