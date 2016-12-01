@@ -2416,6 +2416,8 @@ class DatabaseHelper extends SQLiteOpenHelper {
             if (!isUMindAvailable()) {
                 loadIntegerSetting(stmt, Settings.System.KEYGUARD_TOGGLE_UMIND,
                         0);
+                loadIntegerSetting(stmt, Settings.System.GLOBAL_UMIND,
+                        0);
             }
 
             loadUISoundEffectsSettings(stmt);
