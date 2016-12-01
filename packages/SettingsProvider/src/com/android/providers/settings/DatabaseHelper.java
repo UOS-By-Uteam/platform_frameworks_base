@@ -2412,6 +2412,11 @@ class DatabaseHelper extends SQLiteOpenHelper {
                         R.bool.def_show_password_on);
             }
 
+            // Turn off UMind by default when the package is not available
+            if (!isUMindAvailable()) {
+                loadIntegerSetting(stmt, Settings.System.KEYGUARD_TOGGLE_UMIND,
+                        0);
+            }
 
             loadUISoundEffectsSettings(stmt);
 
@@ -2834,4 +2839,13 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private String getDefaultDeviceName() {
         return mContext.getResources().getString(R.string.def_device_name_simple, Build.MODEL);
     }
-}
+
+    private boolean isUMindAvailable() {
+        PackageManager pm = getPackageManager();
+        try {
+            PackageInfo info = pm.getPackageInfo("com.umind", PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }  
+        return true;
+    }
