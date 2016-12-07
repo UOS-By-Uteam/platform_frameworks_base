@@ -127,8 +127,11 @@ import com.android.systemui.statusbar.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.stack.StackStateAnimator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import static android.service.notification.NotificationListenerService.Ranking.IMPORTANCE_HIGH;
 import static android.service.notification.NotificationListenerService.Ranking.IMPORTANCE_MIN;
@@ -207,6 +210,9 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected int mLayoutDirection = -1; // invalid
     protected AccessibilityManager mAccessibilityManager;
+
+    // on-screen navigation buttons
+    protected NavigationBarView mNavigationBarView = null;
 
     protected boolean mDeviceInteractive;
 
@@ -291,6 +297,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     protected boolean mVrMode;
 
+    private Set<String> mNonBlockablePkgs;
     protected boolean mScreenPinningEnabled;
 
     @Override  // NotificationData.Environment
@@ -871,6 +878,9 @@ public abstract class BaseStatusBar extends SystemUI implements
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to register VR mode state listener: " + e);
         }
+        mNonBlockablePkgs = new ArraySet<String>();
+        Collections.addAll(mNonBlockablePkgs, mContext.getResources().getStringArray(
+                com.android.internal.R.array.config_nonBlockableNotificationPackages));
 
         mPieSettingsObserver.onChange(false);
         mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
@@ -1235,7 +1245,8 @@ public abstract class BaseStatusBar extends SystemUI implements
             settingsButton.setVisibility(View.GONE);
         }
 
-        guts.bindImportance(pmUser, sbn, mNotificationData.getImportance(sbn.getKey()));
+        guts.bindImportance(pmUser, sbn, mNonBlockablePkgs,
+                mNotificationData.getImportance(sbn.getKey()));
 
         final TextView doneButton = (TextView) guts.findViewById(R.id.done);
         doneButton.setText(R.string.notification_done);
@@ -2178,9 +2189,18 @@ public abstract class BaseStatusBar extends SystemUI implements
                                             .getIdentifier();
                                     if (mLockPatternUtils.isSeparateProfileChallengeEnabled(userId)
                                             && mKeyguardManager.isDeviceLocked(userId)) {
-                                        if (startWorkChallengeIfNecessary(userId,
-                                                intent.getIntentSender(), notificationKey)) {
-                                            // Show work challenge, do not run pendingintent and
+                                        boolean canBypass = false;
+                                        try {
+                                            canBypass = ActivityManagerNative.getDefault()
+                                                    .canBypassWorkChallenge(intent);
+                                        } catch (RemoteException e) {
+                                        }
+                                        // For direct-boot aware activities, they can be shown when
+                                        // the device is still locked without triggering the work
+                                        // challenge.
+                                        if ((!canBypass) && startWorkChallengeIfNecessary(userId,
+                                                    intent.getIntentSender(), notificationKey)) {
+                                            // Show work challenge, do not run PendingIntent and
                                             // remove notification
                                             return;
                                         }
@@ -2570,10 +2590,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         }
     }
 
-    protected abstract void haltTicker();
     protected abstract void setAreThereNotifications();
     protected abstract void updateNotifications();
-    protected abstract void tick(StatusBarNotification n, boolean firstTime);
     public abstract boolean shouldDisableNavbarGestures();
 
     public abstract void addNotification(StatusBarNotification notification,
@@ -2610,9 +2628,6 @@ public abstract class BaseStatusBar extends SystemUI implements
                     + " shouldPeek=" + shouldPeek
                     + " alertAgain=" + alertAgain);
         }
-        boolean updateTicker = n.tickerText != null
-                && !TextUtils.equals(n.tickerText,
-                entry.notification.getNotification().tickerText);
 
         final StatusBarNotification oldNotification = entry.notification;
         entry.notification = notification;
@@ -2671,14 +2686,10 @@ public abstract class BaseStatusBar extends SystemUI implements
             mStackScroller.snapViewIfNeeded(entry.row);
         }
 
-        // Is this for you?
-        boolean isForCurrentUser = isNotificationForCurrentProfiles(notification);
-        Log.d(TAG, "notification is " + (isForCurrentUser ? "" : "not ") + "for you");
-
-        // Restart the ticker if it's still running
-        if (updateTicker && isForCurrentUser) {
-            haltTicker();
-            tick(notification, false);
+        if (DEBUG) {
+            // Is this for you?
+            boolean isForCurrentUser = isNotificationForCurrentProfiles(notification);
+            Log.d(TAG, "notification is " + (isForCurrentUser ? "" : "not ") + "for you");
         }
 
         setAreThereNotifications();

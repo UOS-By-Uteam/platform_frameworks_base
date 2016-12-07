@@ -1300,6 +1300,19 @@ public final class Settings {
             = "android.settings.VR_LISTENER_SETTINGS";
 
     /**
+     * Activity Action: Show Storage Manager settings.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_STORAGE_MANAGER_SETTINGS
+            = "android.settings.STORAGE_MANAGER_SETTINGS";
+
+    /**
      * Activity Action: Allows user to select current webview implementation.
      * <p>
      * Input: Nothing.
@@ -2870,7 +2883,8 @@ public final class Settings {
         /**
          * Control whether the process CPU usage meter should be shown.
          *
-         * @deprecated Use {@link Global#SHOW_PROCESSES} instead
+         * @deprecated This functionality is no longer available as of
+         * {@link android.os.Build.VERSION_CODES#N_MR1}.
          */
         @Deprecated
         public static final String SHOW_PROCESSES = Global.SHOW_PROCESSES;
@@ -3227,6 +3241,14 @@ public final class Settings {
         /** @hide */
         public static final Validator TIME_12_24_VALIDATOR =
                 new DiscreteValueValidator(new String[] {"12", "24"});
+
+        /**
+        * Developer options - Navigation Bar show switch
+        * @deprecated Moved to CMSettings.Secure.DEV_FORCE_SHOW_NAVBAR
+        * @hide
+        */
+        public static final String DEV_FORCE_SHOW_NAVBAR = "dev_force_show_navbar";
+
 
         /**
          * Date format string
@@ -6749,6 +6771,8 @@ public final class Settings {
         /**
          * If nonzero, ANRs in invisible background processes bring up a dialog.
          * Otherwise, the process will be silently killed.
+         *
+         * Also prevents ANRs and crash dialogs from being suppressed.
          * @hide
          */
         public static final String ANR_SHOW_BACKGROUND = "anr_show_background";
@@ -6835,6 +6859,18 @@ public final class Settings {
          * @hide
          */
         public static final String DOZE_ENABLED = "doze_enabled";
+
+        /**
+         * Whether the device should pulse on pick up gesture.
+         * @hide
+         */
+        public static final String DOZE_PULSE_ON_PICK_UP = "doze_pulse_on_pick_up";
+
+        /**
+         * Whether the device should pulse on double tap gesture.
+         * @hide
+         */
+        public static final String DOZE_PULSE_ON_DOUBLE_TAP = "doze_pulse_on_double_tap";
 
         /**
          * The current night mode that has been selected by the user.  Owned
@@ -7257,6 +7293,13 @@ public final class Settings {
                 = "demo_user_setup_complete";
 
         /**
+         * Specifies whether the web action API is enabled.
+         *
+         * @hide
+         */
+        public static final String WEB_ACTION_ENABLED = "web_action_enabled";
+
+        /**
          * Enable single click to turn WiFi on or off.
          *
          * @hide
@@ -7380,6 +7423,9 @@ public final class Settings {
             CAMERA_DOUBLE_TAP_POWER_GESTURE_DISABLED,
             SYSTEM_NAVIGATION_KEYS_ENABLED,
             QS_TILES,
+            DOZE_ENABLED,
+            DOZE_PULSE_ON_PICK_UP,
+            DOZE_PULSE_ON_DOUBLE_TAP
         };
 
         /**
@@ -8937,10 +8983,35 @@ public final class Settings {
         /**
          * The server used for captive portal detection upon a new conection. A
          * 204 response code from the server is used for validation.
+         * TODO: remove this deprecated symbol.
          *
          * @hide
          */
         public static final String CAPTIVE_PORTAL_SERVER = "captive_portal_server";
+
+        /**
+         * The URL used for HTTPS captive portal detection upon a new connection.
+         * A 204 response code from the server is used for validation.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_HTTPS_URL = "captive_portal_https_url";
+
+        /**
+         * The URL used for HTTP captive portal detection upon a new connection.
+         * A 204 response code from the server is used for validation.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_HTTP_URL = "captive_portal_http_url";
+
+        /**
+         * The URL used for fallback HTTP captive portal detection when previous HTTP
+         * and HTTPS captive portal detection attemps did not return a conclusive answer.
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_FALLBACK_URL = "captive_portal_fallback_url";
 
         /**
          * Whether to use HTTPS for network validation. This is enabled by default and the setting
@@ -8950,6 +9021,14 @@ public final class Settings {
          * @hide
          */
         public static final String CAPTIVE_PORTAL_USE_HTTPS = "captive_portal_use_https";
+
+        /**
+         * Which User-Agent string to use in the header of the captive portal detection probes.
+         * The User-Agent field is unset when this setting has no value (HttpUrlConnection default).
+         *
+         * @hide
+         */
+        public static final String CAPTIVE_PORTAL_USER_AGENT = "captive_portal_user_agent";
 
         /**
          * Whether network service discovery is enabled.
@@ -9324,6 +9403,13 @@ public final class Settings {
         public static final String CALL_AUTO_RETRY = "call_auto_retry";
 
         /**
+         * A setting that can be read whether the emergency affordance is currently needed.
+         * The value is a boolean (1 or 0).
+         * @hide
+         */
+        public static final String EMERGENCY_AFFORDANCE_NEEDED = "emergency_affordance_needed";
+
+        /**
          * See RIL_PreferredNetworkType in ril.h
          * @hide
          */
@@ -9343,7 +9429,11 @@ public final class Settings {
 
         /**
          * Control whether the process CPU usage meter should be shown.
+         *
+         * @deprecated This functionality is no longer available as of
+         * {@link android.os.Build.VERSION_CODES#N_MR1}.
          */
+        @Deprecated
         public static final String SHOW_PROCESSES = "show_processes";
 
         /**
@@ -9670,13 +9760,22 @@ public final class Settings {
         public static final String WFC_IMS_ENABLED = "wfc_ims_enabled";
 
         /**
-         * WFC Mode.
+         * WFC mode on home/non-roaming network.
          * <p>
          * Type: int - 2=Wi-Fi preferred, 1=Cellular preferred, 0=Wi-Fi only
          *
          * @hide
          */
         public static final String WFC_IMS_MODE = "wfc_ims_mode";
+
+        /**
+         * WFC mode on roaming network.
+         * <p>
+         * Type: int - see {@link WFC_IMS_MODE} for values
+         *
+         * @hide
+         */
+        public static final String WFC_IMS_ROAMING_MODE = "wfc_ims_roaming_mode";
 
         /**
          * Whether WFC roaming is enabled
@@ -9704,6 +9803,16 @@ public final class Settings {
          */
         public static final String EPHEMERAL_COOKIE_MAX_SIZE_BYTES =
                 "ephemeral_cookie_max_size_bytes";
+
+        /**
+         * Toggle to enable/disable the entire ephemeral feature. By default, ephemeral is
+         * enabled. Set to zero to disable.
+         * <p>
+         * Type: int (0 for false, 1 for true)
+         *
+         * @hide
+         */
+        public static final String ENABLE_EPHEMERAL_FEATURE = "enable_ephemeral_feature";
 
         /**
          * A mask applied to the ephemeral hash to generate the hash prefix.
@@ -9782,6 +9891,16 @@ public final class Settings {
          * @hide
          */
         public static final String RETAIL_DEMO_MODE_CONSTANTS = "retail_demo_mode_constants";
+
+        /**
+         * The reason for the settings database being downgraded. This is only for
+         * troubleshooting purposes and its value should not be interpreted in any way.
+         *
+         * Type: string
+         *
+         * @hide
+         */
+        public static final String DATABASE_DOWNGRADE_REASON = "database_downgrade_reason";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
