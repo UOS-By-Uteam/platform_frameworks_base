@@ -2207,10 +2207,6 @@ message MetricsEvent {
     // CATEGORY: SETTINGS
     ACTION_AMBIENT_DISPLAY = 495;
 
-    // ACTION: Settings -> [sub settings activity] -> Options menu -> Help & Support
-    //   SUBTYPE: sub settings classname
-    ACTION_SETTING_HELP_AND_FEEDBACK = 496;
-
     // ---- End N-MR1 Constants, all N-MR1 constants go above this line ----
 
     // Add new aosp constants above this line.
@@ -2224,5 +2220,9 @@ message MetricsEvent {
 
     // UOS Settings
     UMIND_SETTINGS = 498;
+
+    // ACTION: Settings -> [sub settings activity] -> Options menu -> Help & Support
+    //   SUBTYPE: sub settings classname
+    ACTION_SETTING_HELP_AND_FEEDBACK = 499;
   }
 }
