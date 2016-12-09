@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 import android.content.res.XmlResourceParser;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -2413,12 +2414,12 @@ class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             // Turn off UMind by default when the package is not available
-            if (!isUMindAvailable()) {
+            /*if (!isUMindAvailable()) {
                 loadIntegerSetting(stmt, Settings.System.KEYGUARD_TOGGLE_UMIND,
                         0);
                 loadIntegerSetting(stmt, Settings.System.GLOBAL_UMIND,
                         0);
-            }
+            }*/
 
             loadUISoundEffectsSettings(stmt);
 
@@ -2843,7 +2844,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private boolean isUMindAvailable() {
-        PackageManager pm = getPackageManager();
+        PackageManager pm = mContext.getPackageManager();
         try {
             PackageInfo info = pm.getPackageInfo("com.umind", PackageManager.GET_META_DATA);
         } catch (PackageManager.NameNotFoundException e) {
