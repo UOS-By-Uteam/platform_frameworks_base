@@ -2844,15 +2844,4 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private String getDefaultDeviceName() {
         return mContext.getResources().getString(R.string.def_device_name_simple, Build.MODEL);
     }
-
-    private boolean isUMindAvailable() {
-        PackageManager pm = mContext.getPackageManager();
-        try {
-            PackageInfo info = pm.getPackageInfo("com.umind", PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }  
-        return true;
-    }
-
 }

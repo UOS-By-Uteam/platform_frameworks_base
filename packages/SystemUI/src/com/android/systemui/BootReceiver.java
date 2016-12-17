@@ -20,6 +20,8 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageInfo;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -43,6 +45,20 @@ public class BootReceiver extends BroadcastReceiver {
             if (Settings.Global.getInt(res, Settings.Global.SHOW_CPU, 0) != 0) {
                 Intent cpuinfo = new Intent(context, com.android.systemui.CPUInfoService.class);
                 context.startService(cpuinfo);
+            }
+            boolean UMindStatus = true;
+            PackageManager pm = context.getPackageManager();
+            try {
+                PackageInfo info = pm.getPackageInfo("com.umind", PackageManager.GET_META_DATA);
+            } catch (PackageManager.NameNotFoundException e) {
+                UMindStatus = false;
+            }
+            // Turn off UMind by default when the package is not available
+            if (!UMindStatus) {
+                Settings.System.putInt(res, Settings.System.KEYGUARD_TOGGLE_UMIND,
+                        0);
+                Settings.System.putInt(res, Settings.System.GLOBAL_UMIND,
+                        0);
             }
 
         } catch (Exception e) {
