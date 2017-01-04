@@ -673,4 +673,7 @@
 
     <!-- The alpha to apply to the recents row when it doesn't have focus -->
     <item name="recents_recents_row_dim_alpha" format="float" type="dimen">0.5</item>
+
+    <!-- Connection speed text size -->
+    <dimen name="connection_speed_text_size">12dp</dimen>
 </resources>

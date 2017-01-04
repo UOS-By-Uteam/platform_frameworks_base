@@ -1510,9 +1510,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     performAuditoryFeedbackForAccessibilityIfNeed();
                 }
                 boolean locked = isStatusBarKeyguard() && isKeyguardSecure(mCurrentUserId);
-                boolean globalActionsOnLockScreen = Settings.System.getIntForUser(mContext.getContentResolver(),
-                            Settings.System.POWER_MENU_LOCKSCREEN, 1, UserHandle.USER_CURRENT) == 1;
-                if (locked && !globalActionsOnLockScreen) {
+                if (locked) {
                     behavior = LONG_PRESS_POWER_NOTHING;
                 } else {
                     showGlobalActionsInternal();

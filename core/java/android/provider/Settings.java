@@ -3707,6 +3707,12 @@ public final class Settings {
         public static final String KEYGUARD_TOGGLE_TORCH = "keyguard_toggle_torch";
 
         /**
+         * Enable/Disable connection speed
+         * @hide
+         */
+        public static final String CONNECTION_SPEED_STATE = "connection_speed_state";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
