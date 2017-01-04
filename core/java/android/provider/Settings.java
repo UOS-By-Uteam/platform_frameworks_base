@@ -5134,6 +5134,18 @@ public final class Settings {
                 "lock_screen_allow_remote_input";
 
         /**
+         * Setting to record the user choice of whether to report the stats to UOS Server
+         * @hide
+         */
+        public static final String UOS_STATS = "uos_stats";
+
+        /**
+         * Setting to record the opt-out of UOS Stats
+         * @hide
+         */
+        public static final String UOS_STATS_RECORDED = "uos_stats_recorded";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
