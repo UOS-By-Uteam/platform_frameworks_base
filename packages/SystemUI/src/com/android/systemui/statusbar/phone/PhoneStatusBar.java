@@ -572,6 +572,20 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     };
 
+    final private ContentObserver mNotificationIconsObserver = new ContentObserver(mHandler) {
+        @Override
+        public void onChange(boolean selfChange) {
+            boolean animate = true;
+            animate &= mStatusBarWindowState != WINDOW_STATE_HIDDEN;
+            if(Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
+                mIconController.hideNotificationIconArea(animate);
+            } else {
+                mIconController.showNotificationIconArea(animate);
+            }
+        }
+    };
+
     private int mInteractingWindows;
     private boolean mAutohideSuspended;
     private int mStatusBarMode;
@@ -832,6 +846,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.Global.getUriFor(SETTING_HEADS_UP_TICKER), true,
                     mHeadsUpObserver);
         }
+        mNotificationIconsObserver.onChange(true); // set up
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.NOTIFICATION_ICONS_HIDE), true,
+                mNotificationIconsObserver);
         mUnlockMethodCache = UnlockMethodCache.getInstance(mContext);
         mUnlockMethodCache.addListener(this);
         startKeyguard();
@@ -2620,8 +2638,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
-        if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
-            if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
+        if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0 || Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
+            if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0 || Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
                 mIconController.hideNotificationIconArea(animate);
             } else {
                 mIconController.showNotificationIconArea(animate);

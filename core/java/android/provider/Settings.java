@@ -3701,6 +3701,12 @@ public final class Settings {
         public static final String SCREENSHOT_SOUND = "screenshot_sound";
 
         /**
+         * Enable/Disable notification icons
+         * @hide
+         */
+        public static final String NOTIFICATION_ICONS_HIDE = "notification_icons_hide";
+
+        /**
          * whether to enable torch on lockscreen
          * @hide
          */
