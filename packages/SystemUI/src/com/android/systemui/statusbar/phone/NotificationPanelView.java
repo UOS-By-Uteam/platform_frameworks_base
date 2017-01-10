@@ -2765,9 +2765,9 @@ public class NotificationPanelView extends PanelView implements
             mBlurRadius = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.BLUR_RADIUS_PREFERENCE_KEY, 5);
             mTranslucentQuickSettings =  Settings.System.getIntForUser(resolver,
-                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PREFERENCE_KEY, 0, UserHandle.USER_CURRENT) == 1;
+                    Settings.System.TRANSLUCENT_QUICK_SETTINGS_PREFERENCE_KEY, 1, UserHandle.USER_CURRENT) == 1;
             mBlurredStatusBarExpandedEnabled = Settings.System.getIntForUser(resolver,
-                    Settings.System.STATUS_BAR_EXPANDED_ENABLED_PREFERENCE_KEY, 0, UserHandle.USER_CURRENT) == 1;
+                    Settings.System.STATUS_BAR_EXPANDED_ENABLED_PREFERENCE_KEY, 1, UserHandle.USER_CURRENT) == 1;
             mTranslucencyPercentage = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.TRANSLUCENT_QUICK_SETTINGS_PRECENTAGE_PREFERENCE_KEY, 60);
 
