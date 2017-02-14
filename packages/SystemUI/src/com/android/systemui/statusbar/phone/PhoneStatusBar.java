@@ -694,9 +694,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             animate &= mStatusBarWindowState != WINDOW_STATE_HIDDEN;
             if(Settings.System.getInt(mContext.getContentResolver(),
                         Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
-                mIconController.hideNotificationIconArea(animate);
+                mIconController.hideNotificationIconAreaExceptClock(animate);
             } else {
-                mIconController.showNotificationIconArea(animate);
+                mIconController.showNotificationIconAreaExceptClock(animate);
             }
         }
     };
@@ -2798,10 +2798,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
         }
 
-        if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0 || Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
-            if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0 || Settings.System.getInt(mContext.getContentResolver(),
-                        Settings.System.NOTIFICATION_ICONS_HIDE, 0) == 0) {
+        if ((diff1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
+            if ((state1 & StatusBarManager.DISABLE_NOTIFICATION_ICONS) != 0) {
                 mIconController.hideNotificationIconArea(animate);
             } else {
                 mIconController.showNotificationIconArea(animate);

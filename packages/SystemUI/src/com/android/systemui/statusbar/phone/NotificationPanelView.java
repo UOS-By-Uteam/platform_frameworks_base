@@ -374,13 +374,12 @@ public class NotificationPanelView extends PanelView implements
         if (mKeyguardShowing) {
             mQsContainer.getBackground().setAlpha(255);
         } else {
-            mQsContainer.getBackground().setAlpha(mTranslucentQuickSettings ? mTranslucencyPercentage : 255);
+            mQsContainer.getBackground().setAlpha(0);
         }
     }
 
 
     public static void startBlurTask() {
-
         if (!mBlurredStatusBarExpandedEnabled)
             return;
         try {

@@ -299,4 +299,7 @@
 
     <!-- Default for Settings.Global.CAPTIVE_PORTAL_DETECTION_ENABLED -->
     <integer name="def_captive_portal_detection_enabled" translatable="false">1</integer>
+
+    <!-- Defaults for Settings.System.GLOBAL_UMIND. -->
+    <integer name="def_global_umind">0</integer>
 </resources>

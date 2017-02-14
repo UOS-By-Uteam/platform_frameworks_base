@@ -34,7 +34,7 @@ public class ClockController implements TunerService.Tunable {
     private Clock mRightClock, mCenterClock, mLeftClock, mActiveClock;
 
     private int mAmPmStyle = AM_PM_STYLE_GONE;
-    private int mClockPosition = CLOCK_POSITION_RIGHT;
+    private int mClockPosition = CLOCK_POSITION_LEFT;
     private boolean mClockVisible = true;
     private boolean mShowSeconds = false;
 
@@ -59,12 +59,12 @@ public class ClockController implements TunerService.Tunable {
             case CLOCK_POSITION_CENTER:
                 clockForAlignment = mCenterClock;
                 break;
-            case CLOCK_POSITION_LEFT:
-                clockForAlignment = mLeftClock;
-                break;
             case CLOCK_POSITION_RIGHT:
-            default:
                 clockForAlignment = mRightClock;
+                break;
+            case CLOCK_POSITION_LEFT:
+            default:
+                clockForAlignment = mLeftClock;
                 break;
         }
         return clockForAlignment;
@@ -91,7 +91,7 @@ public class ClockController implements TunerService.Tunable {
         Log.d(TAG, "onTuningChanged key=" + key + " value=" + newValue);
 
         if (CLOCK_POSITION.equals(key)) {
-            mClockPosition = newValue == null ? CLOCK_POSITION_RIGHT : Integer.valueOf(newValue);
+            mClockPosition = newValue == null ? CLOCK_POSITION_LEFT : Integer.valueOf(newValue);
         } else if (CLOCK_STYLE.equals(key)) {
             mAmPmStyle = newValue == null ? AM_PM_STYLE_GONE : Integer.valueOf(newValue);
         } else if (CLOCK_SECONDS.equals(key)) {

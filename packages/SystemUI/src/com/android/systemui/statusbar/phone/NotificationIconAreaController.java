@@ -3,6 +3,7 @@ package com.android.systemui.statusbar.phone;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -10,8 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.provider.Settings;
 
 import com.android.internal.util.NotificationColorUtil;
+import com.android.systemui.Interpolators;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.StatusBarIconView;
@@ -213,5 +216,67 @@ public class NotificationIconAreaController {
         if (mNotificationIcons != null) {
             mNotificationIcons.setClockAndDateStatus(mode);
         }
+    }
+
+    /**
+     * Hides a view.
+     */
+    private void animateHide(final View v, boolean animate) {
+        v.animate().cancel();
+        if (!animate) {
+            v.setAlpha(0f);
+            v.setVisibility(View.INVISIBLE);
+            return;
+        }
+        v.animate()
+                .alpha(0f)
+                .setDuration(160)
+                .setStartDelay(0)
+                .setInterpolator(Interpolators.ALPHA_OUT)
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        v.setVisibility(View.INVISIBLE);
+                    }
+                });
+    }
+
+    /**
+     * Shows a view, and synchronizes the animation with Keyguard exit animations, if applicable.
+     */
+    private void animateShow(View v, boolean animate) {
+        v.animate().cancel();
+        v.setVisibility(View.VISIBLE);
+        if (!animate) {
+            v.setAlpha(1f);
+            return;
+        }
+        v.animate()
+                .alpha(1f)
+                .setDuration(320)
+                .setInterpolator(Interpolators.ALPHA_IN)
+                .setStartDelay(50)
+
+                // We need to clean up any pending end action from animateHide if we call
+                // both hide and show in the same frame before the animation actually gets started.
+                // cancel() doesn't really remove the end action.
+                .withEndAction(null);
+
+        // Synchronize the motion with the Keyguard fading if necessary.
+        if (mPhoneStatusBar.isKeyguardFadingAway()) {
+            v.animate()
+                    .setDuration(mPhoneStatusBar.getKeyguardFadingAwayDuration())
+                    .setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN)
+                    .setStartDelay(mPhoneStatusBar.getKeyguardFadingAwayDelay())
+                    .start();
+        }
+    }
+
+    public void hideNotificationIconArea(boolean animate) {
+        animateHide(mNotificationIcons, animate);
+    }
+
+    public void showNotificationIconArea(boolean animate) {
+        animateShow(mNotificationIcons, animate);
     }
 }

@@ -349,6 +349,14 @@ public class StatusBarIconController extends StatusBarIconList implements Tunabl
         animateShow(mCenterClockLayout, animate);
     }
 
+    public void hideNotificationIconAreaExceptClock(boolean animate) {
+        mNotificationIconAreaController.hideNotificationIconArea(animate);
+    }
+
+    public void showNotificationIconAreaExceptClock(boolean animate) {
+        mNotificationIconAreaController.showNotificationIconArea(animate);
+    }
+
     public void setClockVisibility(boolean visible) {
         mClockController.setVisibility(visible);
     }
